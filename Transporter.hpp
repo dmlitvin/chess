@@ -30,10 +30,12 @@ struct Transporter {
     endpoint_t acceptClient();
     void connect(const std::string & hostName);
 
-    static void sendMessage(const IMessage*, endpoint_t);
-    void sendMessage(const IMessage*);
+    endpoint_t getEndpoint() const;
 
+    static void sendMessage(const IMessage*, endpoint_t);
     static std::string receiveMessage(endpoint_t);
+
+    void sendMessage(const IMessage*);
     std::string receiveMessage();
 
     ~Transporter();

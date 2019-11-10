@@ -159,3 +159,7 @@ std::string Transporter::receiveMessage(Transporter::endpoint_t endpoint)
 
     return {messageBuffer.data(), messageBuffer.size()};
 }
+
+Transporter::endpoint_t Transporter::getEndpoint() const {
+    return _endpoint;
+}
