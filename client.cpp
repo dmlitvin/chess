@@ -2,35 +2,24 @@
 
 #include <sys/socket.h>
 #include <netdb.h>
+#include <unistd.h>
+
+#include "Transporter.hpp"
+#include "ChessFigure.hpp"
 
 int main(int ac, char **av)
 {
-    av[ac] = 0;
-    int sockfd = socket(AF_INET, SOCK_STREAM, 0);
+    av[ac] = nullptr;
 
-    if (sockfd == -1) {
-        perror("error creating endpoint");
-        return 1;
-    }
+//    std::cout << sizeof(ChessFigure::figure_type) << std::endl;
 
-    sockaddr_in sockaddrConnect;
-    bzero(&sockaddrConnect, sizeof(sockaddr_in));
+    Transporter transporter(Transporter::Role::CLIENT, 4242);
 
-    hostent *localhost = gethostbyname("localhost");
+    transporter.connect("localhost");
 
-    if (!localhost) {
-        perror("error resolving hostname");
-        return 1;
-    }
+    transporter.sendMessage(ChessMessage(av[1]));
 
-    sockaddrConnect.sin_family = AF_INET;
-    sockaddrConnect.sin_port = htons(4242);
-    sockaddrConnect.sin_addr.s_addr = ((in_addr*)localhost->h_addr)->s_addr;
-
-    if (connect(sockfd, (sockaddr*)&sockaddrConnect, sizeof(sockaddr_in)) == -1) {
-        perror("error connecting to server");
-        return 1;
-    }
+    read(0, NULL, 1);
 
     std::cout << "chess_client" << std::endl;
     return 0;

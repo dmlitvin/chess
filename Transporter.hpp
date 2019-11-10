@@ -6,9 +6,9 @@
 #define CHESS_TRANSPORTER_HPP
 
 
-#include <string>
+#include <vector>
 
-#include "IMessage.hpp"
+#include "ChessMessage.hpp"
 
 struct Transporter {
 
@@ -32,11 +32,11 @@ struct Transporter {
 
     endpoint_t getEndpoint() const;
 
-    static void sendMessage(const IMessage*, endpoint_t);
-    static std::string receiveMessage(endpoint_t);
+    static void sendMessage(const ChessMessage&, endpoint_t);
+    static std::vector<char> receiveMessage(endpoint_t);
 
-    void sendMessage(const IMessage*);
-    std::string receiveMessage();
+    void sendMessage(const ChessMessage&);
+    std::vector<char> receiveMessage();
 
     ~Transporter();
 

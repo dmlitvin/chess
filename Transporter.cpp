@@ -10,7 +10,6 @@
 
 #include <stdexcept>
 #include <iostream>
-#include <vector>
 
 Transporter::~Transporter()
 {
@@ -101,11 +100,11 @@ Transporter::endpoint_t Transporter::acceptClient()
     return endpoint;
 }
 
-std::string Transporter::receiveMessage() {
+std::vector<char> Transporter::receiveMessage() {
     return receiveMessage(_endpoint);
 }
 
-void Transporter::sendMessage(const IMessage *message) {
+void Transporter::sendMessage(const ChessMessage & message) {
     sendMessage(message, _endpoint);
 }
 
@@ -121,27 +120,25 @@ void checkIOResult(ssize_t IOResult)
     }
 }
 
-void Transporter::sendMessage(const IMessage *message, Transporter::endpoint_t endpoint)
+void Transporter::sendMessage(const ChessMessage & message, Transporter::endpoint_t endpoint)
 {
-    if (message == nullptr) {
-        throw std::invalid_argument("message can't be nullptr");
-    }
-
-    std::string serializedMsg = message->serialize();
+    std::vector<char> serializedMsg = message.serialize();
 
     uint32_t serializedMsgLen = htonl(static_cast<uint32_t>(serializedMsg.size()));
 
-    std::vector<char> messageBuffer(serializedMsgLen + sizeof(serializedMsgLen));
+    std::vector<char> messageBuffer(serializedMsg.size() + sizeof(serializedMsgLen));
+
+    // TODO: change to std::copy (may be)
 
     memcpy(const_cast<char*>(messageBuffer.data()), &serializedMsgLen, sizeof(serializedMsgLen));
-    memcpy(const_cast<char*>(messageBuffer.data()) + sizeof(serializedMsgLen), serializedMsg.data(), serializedMsgLen);
+    memcpy(const_cast<char*>(messageBuffer.data()) + sizeof(serializedMsgLen), serializedMsg.data(), serializedMsg.size());
 
     ssize_t IOResult = write(endpoint, messageBuffer.data(), messageBuffer.size());
 
     checkIOResult(IOResult);
 }
 
-std::string Transporter::receiveMessage(Transporter::endpoint_t endpoint)
+std::vector<char> Transporter::receiveMessage(Transporter::endpoint_t endpoint)
 {
     uint32_t serializedMsgLen;
 
@@ -157,7 +154,7 @@ std::string Transporter::receiveMessage(Transporter::endpoint_t endpoint)
 
     checkIOResult(IOResult);
 
-    return {messageBuffer.data(), messageBuffer.size()};
+    return messageBuffer;
 }
 
 Transporter::endpoint_t Transporter::getEndpoint() const {
